@@ -5,5 +5,5 @@
     "d3": "~3.4.3",
     "polymer": "~0.2.1",
     "polymer-elements": "Polymer/polymer-elements#~0.2.1",
-  },
+  }
 }
