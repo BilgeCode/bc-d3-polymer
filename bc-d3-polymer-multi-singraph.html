@@ -8,10 +8,26 @@ license that can be found in the LICENSE file.
  * @module bc-d3-polymer
  */
 /**
- * bc-d3-polymer-singraph is a standalone component that can be
- * used on its own or easily extended.
+ * bc-d3-polymer-multi-singraph extends bc-d3-polymer-singraph
+ * to display overlayed sin-graphs
  *
- * @class bc-d3-polymer-singraph
+ * Data is now an object of the form:
+ *  {[
+ *    {
+ *      data: {},
+ *      fill-color: ###,
+ *      stroke-color: ###,
+ *      fill-opacity: #.#
+ *    },
+ *    {
+ *      data: {},
+ *      fill-color: ###,
+ *      stroke-color: ###,
+ *      fill-opacity: #.#
+ *    }
+ *  ]}
+ *
+ * @class bc-d3-polymer-multi-singraph
  */
 /**
 
@@ -29,80 +45,20 @@ license that can be found in the LICENSE file.
     clearGraph - removes all child elements of main svg
     drawGraph - draws the graph
     updateGraph - applies the domain to the graph
-
-  @todo: 
-    - make more extensible
-      - overridable methods for axis and other properties
-      - argument for interpolation
  */
 -->
 
-<link rel="import" href="bc-d3-polymer-base.html">
+<link rel="import" href="bc-d3-polymer-singraph.html">
 
-<polymer-element name="bc-d3-polymer-singraph" extends="bc-d3-polymer-base">
-  <template>
-    <style>
-    :host .chartContainer {
-      background-color: #ccccdd;
-      border: 2px solid #ffffff;
-      margin: 0px;
-    }
-    :host .sin-chart {
-/*        fill: #446687;*/
-      fill: steelblue;
-      stroke: white;
-      stroke-width: 2px;
-    }
-    
-    :host .axis path, :host .axis line {
-      fill: none;
-    	stroke: #000;
-     	shape-rendering: crispEdges;
-    }
-    
-    :host .chartContainer text {
-      font: 10px sans-serif;
-      text-anchor: middle;
-      fill: steelblue;
-    }
-    
-    :host g.context g.axis path {
-    	stroke-opacity: 0;
-    }
+<polymer-element name="bc-d3-polymer-multi-singraph" extends="bc-d3-polymer-singraph">
 
-    :host g.context g.axis line {
-    	stroke-opacity: .1;
-    }
-    
-    :host g.tick text {
-      color: rgb(0, 0, 0);
-      fill: #000000; 
-    }
-    </style>
-      <svg id="chart" class="chartContainer" style="height: {{height}};width: {{width}}px;"></svg>
-  </template>
-  
   <script>
-    Polymer('bc-d3-polymer-singraph', {
-      
-      /*
-        @todo:
-          - add styles
-          - allow padding
-          - add and format the axes
-      */
+    Polymer('bc-d3-polymer-multi-singraph', {
       
       created: function() {
         this.super();
         this.paddingTop = 5;
         this.paddingBottom = 10;
-      },
-      
-      clearGraph: function() {
-        // Remove all the bars, text and axes
-        // this.area.remove();
-        this.chartContainer.selectAll(".sin-chart").remove();
-        this.chartContainer.selectAll(".axis").remove();
       },
       
       updateGraph: function() {
