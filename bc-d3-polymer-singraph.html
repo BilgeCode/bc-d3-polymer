@@ -112,6 +112,12 @@ license that can be found in the LICENSE file.
         }
         
         this.updateScales();
+        this.updateArea();
+        this.updateAxes();
+
+      },
+      
+      updateArea: function() {
         
         var xS = this.xScale;
         var yS = this.yScale;
@@ -119,17 +125,19 @@ license that can be found in the LICENSE file.
         
         // update the area
         this.area
-          .x(function(d) { return xS(d.date); })
+          .x(function(d) { return xS(d.xVal); })
           .y0(h)
-          .y1(function(d) { return yS(d.value); });
+          .y1(function(d) { return yS(d.yVal); });
         
         this.chartContainer
           .select("path")
           .data([this.data])
           .attr("d", this.area);
-          
+      },
+      
+      updateAxes: function() {
         // Update the y axis
-        this.yAxis.scale(yS);
+        this.yAxis.scale(this.yScale);
         this.chartContainer.selectAll("g.y")
           .call(this.yAxis);
       },
@@ -144,6 +152,13 @@ license that can be found in the LICENSE file.
         this.clearGraph();
         this.updateScales();
       
+        this.createArea();
+        this.createAxes();
+
+        this.updateGraph();
+      },
+      
+      createArea: function() {
         var xS = this.xScale;
         var yS = this.yScale;
         var h = this.height;
@@ -151,23 +166,24 @@ license that can be found in the LICENSE file.
         // create the area
         this.area = d3.svg.area()
           .interpolate("cardinal")
-          .x(function(d) { return xS(d.date); })
+          .x(function(d) { return xS(d.xVal); })
           .y0(h)
-          .y1(function(d) { return yS(d.value); });
+          .y1(function(d) { return yS(d.yVal); });
           
         // Add it to the page
         this.chartContainer.append("path")
           .data([this.data])
           .attr("class", "sin-chart")
           .attr("d", this.area);
-          
-        this.yAxis = d3.svg.axis().scale(yS).orient("right").ticks(3);
+      },
+      
+      createAxes: function() {
+        this.yAxis = d3.svg.axis().scale(this.yScale).orient("right").ticks(3);
+
     	  this.chartContainer.append("g")
           .attr("class", "y axis")
           .attr("transform", "translate(5,0)")
           .call(this.yAxis);
-
-        this.updateGraph();
       }
     });
   </script>

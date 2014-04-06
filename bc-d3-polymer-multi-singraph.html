@@ -14,16 +14,16 @@ license that can be found in the LICENSE file.
  * Data is now an object of the form:
  *  {[
  *    {
- *      data: {},
- *      fill-color: ###,
- *      stroke-color: ###,
- *      fill-opacity: #.#
+ *      data: [],
+ *      fillColor: ###,
+ *      strokeColor: ###,
+ *      fillOpacity: #.#
  *    },
  *    {
- *      data: {},
- *      fill-color: ###,
- *      stroke-color: ###,
- *      fill-opacity: #.#
+ *      data: [],
+ *      fillColor: ###,
+ *      strokeColor: ###,
+ *      fillOpacity: #.#
  *    }
  *  ]}
  *
@@ -55,75 +55,92 @@ license that can be found in the LICENSE file.
   <script>
     Polymer('bc-d3-polymer-multi-singraph', {
       
-      created: function() {
-        this.super();
-        this.paddingTop = 5;
-        this.paddingBottom = 10;
+      getXDomain: function() {
+        if(this.domain == undefined) {
+          var allExtents = [];
+          var e = null;
+          for(var i=0; i<this.data.length; i++) {
+            e = d3.extent(this.data[i].data, function(d) { return d.xVal; });
+            allExtents.push(e[0]);
+            allExtents.push(e[1]);
+          }
+          return d3.extent(allExtents);
+        }
+        else {
+          return this.domain;
+        }
       },
       
-      updateGraph: function() {
-        // Updates the elements of the graph
-        if(this.debug) {
-          console.log("Updating Graph.");
+      getYDomain: function() {
+        var mins = [];
+        var maxs = [];
+        for(var i=0; i<this.data.length; i++) {
+          mins.push(d3.min(this.data[i].data, function(d) { return d.yVal; }));
+          maxs.push(d3.max(this.data[i].data, function(d) { return d.yVal; }));
         }
+        return [
+          d3.min(mins),
+          d3.max(maxs)  
+        ];
+      },
+      
+      createArea: function() {
+        var xS = this.xScale;
+        var yS = this.yScale;
+        var h = this.height;
         
-        this.updateScales();
+        this.areas = [];
+        // create the areas for each data set
+        for(var i=0; i<this.data.length; i++) {
+          
+          var style = "";
+          if(this.data[i].fillColor) {
+            style += "fill: " + this.data[i].fillColor + ";";
+          }
+          if(this.data[i].strokeColor) {
+            style += "stroke: " + this.data[i].strokeColor + ";";
+          }
+          if(this.data[i].fillOpacity) {
+            style += "opacity: " + this.data[i].fillOpacity + ";";
+          }
+          
+          this.areas.push(
+            d3.svg.area()
+              .interpolate("cardinal")
+              .x(function(d) { return xS(d.xVal); })
+              .y0(h)
+              .y1(function(d) { return yS(d.yVal); })
+          );
+          
+          // var d = this.data[i].data;
+          // Add it to the page
+          this.chartContainer.append("path")
+            .data([this.data[i].data])
+            .attr("class", "sin-chart sinpath" + i)
+            .attr("style", style)
+            .attr("d", this.areas[i]);
+        }
+      },
+      
+      updateArea: function() {
         
         var xS = this.xScale;
         var yS = this.yScale;
         var h = this.height;
         
-        // update the area
-        this.area
-          .x(function(d) { return xS(d.date); })
-          .y0(h)
-          .y1(function(d) { return yS(d.value); });
+        // update the areas
+        for(var i=0; i<this.data.length; i++) {
+          this.areas[i]
+            .x(function(d) { return xS(d.xVal); })
+            .y0(h)
+            .y1(function(d) { return yS(d.yVal); });
         
-        this.chartContainer
-          .select("path")
-          .data([this.data])
-          .attr("d", this.area);
-          
-        // Update the y axis
-        this.yAxis.scale(yS);
-        this.chartContainer.selectAll("g.y")
-          .call(this.yAxis);
-      },
-      
-      createGraph: function() {
-        if(this.debug) {
-          console.log("DRAWING CHART");
-          console.log("width" + this.width);
-          console.log("height" + this.height);
+          // var d = this.data[i].data;
+          this.chartContainer
+            .select(".sinpath" + i)
+            .data([this.data[i].data])
+            .attr("d", this.areas[i]);
         }
-        
-        this.clearGraph();
-        this.updateScales();
-      
-        var xS = this.xScale;
-        var yS = this.yScale;
-        var h = this.height;
-        
-        // create the area
-        this.area = d3.svg.area()
-          .interpolate("cardinal")
-          .x(function(d) { return xS(d.date); })
-          .y0(h)
-          .y1(function(d) { return yS(d.value); });
-          
-        // Add it to the page
-        this.chartContainer.append("path")
-          .data([this.data])
-          .attr("class", "sin-chart")
-          .attr("d", this.area);
-          
-        this.yAxis = d3.svg.axis().scale(yS).orient("right").ticks(3);
-    	  this.chartContainer.append("g")
-          .attr("class", "y axis")
-          .attr("transform", "translate(5,0)")
-          .call(this.yAxis);
-
-        this.updateGraph();
       }
     });
   </script>
